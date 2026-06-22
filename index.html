@@ -1,0 +1,1344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Best hiking destinations in Switzerland (2026) with interactive map, smart filters, planner, and immersive parallax storytelling." />
+  <title>Best Hiking Destinations in Switzerland (2026 Guide)</title>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <style>
+    :root {
+      --bg: #06111f;
+      --bg-elev: rgba(255, 255, 255, 0.08);
+      --bg-solid: #0d1b2a;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #e6eef8;
+      --muted: #afbed3;
+      --accent: #6ae4ff;
+      --accent-2: #95f29b;
+      --accent-3: #ffc857;
+      --danger: #ff8fa3;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      --max: 1200px;
+      --radius: 24px;
+      --blur: blur(16px);
+      --nav-bg: rgba(6, 17, 31, 0.72);
+      --hero-overlay: linear-gradient(180deg, rgba(6,17,31,0.18) 0%, rgba(6,17,31,0.55) 60%, rgba(6,17,31,0.98) 100%);
+      --mountain-1: #0f2e4d;
+      --mountain-2: #1c4b78;
+      --mountain-3: #3a6a95;
+      --chip-bg: rgba(255,255,255,0.08);
+      --input-bg: rgba(255,255,255,0.06);
+      --grid-line: rgba(255,255,255,0.06);
+      --map-panel: rgba(255,255,255,0.04);
+      --ring: 0 0 0 3px rgba(106, 228, 255, 0.25);
+      color-scheme: dark;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f8fc;
+      --bg-elev: rgba(255, 255, 255, 0.88);
+      --bg-solid: #ffffff;
+      --card: rgba(255, 255, 255, 0.88);
+      --card-border: rgba(10, 40, 80, 0.08);
+      --text: #10233a;
+      --muted: #50657c;
+      --accent: #1179ff;
+      --accent-2: #00a95f;
+      --accent-3: #f59f00;
+      --danger: #d9485f;
+      --shadow: 0 18px 50px rgba(18, 36, 61, 0.1);
+      --nav-bg: rgba(255, 255, 255, 0.78);
+      --hero-overlay: linear-gradient(180deg, rgba(245,248,252,0.2) 0%, rgba(245,248,252,0.5) 60%, rgba(245,248,252,0.96) 100%);
+      --mountain-1: #dcecfb;
+      --mountain-2: #bdd5ee;
+      --mountain-3: #8fb6de;
+      --chip-bg: rgba(17, 121, 255, 0.08);
+      --input-bg: rgba(17, 121, 255, 0.04);
+      --grid-line: rgba(16, 35, 58, 0.06);
+      --map-panel: rgba(17, 121, 255, 0.04);
+      --ring: 0 0 0 3px rgba(17, 121, 255, 0.18);
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(106,228,255,0.16), transparent 32%),
+        radial-gradient(circle at top right, rgba(149,242,155,0.10), transparent 24%),
+        linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 86%, black) 100%);
+      color: var(--text);
+      line-height: 1.62;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--bg-solid);
+      color: var(--text);
+      z-index: 1000;
+      transition: top .2s ease;
+      border: 1px solid var(--card-border);
+    }
+    .skip-link:focus { top: 12px; box-shadow: var(--ring); }
+
+    .site-shell {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: radial-gradient(circle at center, black 48%, transparent 88%);
+      opacity: .55;
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--card-border);
+      background: var(--nav-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .topbar-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: .01em;
+      text-decoration: none;
+    }
+
+    .brand-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #031322;
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: 0 8px 22px rgba(106,228,255,.28);
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .nav-links a, .theme-toggle {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--text);
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+      font: inherit;
+    }
+
+    .nav-links a:hover, .nav-links a:focus-visible, .theme-toggle:hover, .theme-toggle:focus-visible {
+      transform: translateY(-1px);
+      background: var(--chip-bg);
+      border-color: var(--card-border);
+      outline: none;
+      box-shadow: var(--ring);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--text);
+      border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+      padding: 8px 14px;
+      font-size: .92rem;
+      font-weight: 600;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 84px 20px 40px;
+      overflow: clip;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        var(--hero-overlay),
+        linear-gradient(135deg, rgba(106,228,255,.18), transparent 35%),
+        linear-gradient(45deg, rgba(149,242,155,.15), transparent 28%),
+        url('https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+      transform: scale(1.06);
+      z-index: -3;
+    }
+
+    .aurora {
+      position: absolute;
+      inset: auto 0 30% auto;
+      width: min(52vw, 540px);
+      height: min(52vw, 540px);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(106,228,255,.24), transparent 62%);
+      filter: blur(30px);
+      z-index: -2;
+      animation: floatGlow 10s ease-in-out infinite alternate;
+    }
+
+    .mountain-layer {
+      position: absolute;
+      left: -8vw;
+      right: -8vw;
+      bottom: -4vh;
+      height: 46vh;
+      transform-origin: center bottom;
+      will-change: transform;
+      z-index: -1;
+      opacity: .98;
+    }
+
+    .mountain-back {
+      clip-path: polygon(0 100%, 8% 72%, 12% 76%, 18% 48%, 24% 65%, 31% 40%, 38% 56%, 46% 28%, 56% 67%, 63% 43%, 70% 69%, 76% 54%, 84% 76%, 91% 48%, 100% 100%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--mountain-1) 92%, white) 0%, var(--mountain-1) 100%);
+      filter: blur(8px);
+      opacity: .6;
+    }
+
+    .mountain-mid {
+      height: 42vh;
+      clip-path: polygon(0 100%, 0 76%, 7% 66%, 17% 34%, 24% 52%, 33% 28%, 41% 46%, 50% 18%, 59% 52%, 69% 26%, 78% 49%, 88% 36%, 100% 70%, 100% 100%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--mountain-2) 96%, white) 0%, var(--mountain-2) 100%);
+      opacity: .75;
+    }
+
+    .mountain-front {
+      height: 34vh;
+      clip-path: polygon(0 100%, 0 70%, 10% 60%, 18% 38%, 27% 62%, 37% 40%, 45% 68%, 54% 35%, 63% 55%, 74% 28%, 84% 62%, 92% 50%, 100% 66%, 100% 100%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--mountain-3) 92%, black) 0%, var(--mountain-3) 100%);
+      box-shadow: inset 0 18px 40px rgba(255, 255, 255, .08);
+    }
+
+    .hero-content {
+      width: 100%;
+      max-width: var(--max);
+      display: grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap: 28px;
+      align-items: end;
+    }
+
+    .hero-copy {
+      padding: clamp(18px, 3vw, 24px);
+    }
+
+    .hero h1 {
+      margin: 14px 0 16px;
+      font-size: clamp(2.8rem, 8vw, 6rem);
+      line-height: .95;
+      letter-spacing: -0.05em;
+      max-width: 12ch;
+      text-wrap: balance;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(90deg, var(--accent), #c2fffc 45%, var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      margin: 0 0 16px;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.15rem);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      padding: 14px 18px;
+      border-radius: 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn:hover, .btn:focus-visible { transform: translateY(-2px); box-shadow: var(--shadow); outline: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #9ff8ff); color: #04111f; }
+    .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--card-border); backdrop-filter: blur(10px); }
+
+    .hero-panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--card-border);
+      border-radius: calc(var(--radius) + 2px);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .hero-panel h2 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+      letter-spacing: .02em;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.08);
+      text-align: center;
+    }
+
+    .metric .value {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+
+    .metric small { color: var(--muted); }
+
+    .hero-panel ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .section {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 80px 20px 20px;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      text-wrap: balance;
+    }
+
+    .section-header p {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--muted);
+    }
+
+    .quick-guide {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--bg-elev);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+    }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 10px; text-align: left; border-bottom: 1px solid var(--card-border); }
+    th { color: var(--muted); font-size: .92rem; font-weight: 700; }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .chip { display: inline-flex; align-items: center; gap: 8px; padding: .55rem .9rem; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--card-border); font-size: .95rem; }
+
+    .filters-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, .9fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: .9rem;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .field select,
+    .field input,
+    .planner-grid select {
+      width: 100%;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 14px;
+      font: inherit;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .field select:focus,
+    .field input:focus,
+    .planner-grid select:focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: var(--ring); }
+
+    .helper-text {
+      color: var(--muted);
+      font-size: .92rem;
+      margin-top: 12px;
+    }
+
+    .destination-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .card {
+      position: relative;
+      overflow: clip;
+      background: var(--bg-elev);
+      border: 1px solid var(--card-border);
+      border-radius: calc(var(--radius) + 2px);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+    }
+
+    .card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--accent) 26%, var(--card-border)); }
+    .card-media {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: linear-gradient(120deg, rgba(106, 228, 255, .18), rgba(149, 242, 155, .2));
+    }
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .45s ease;
+    }
+    .card:hover .card-media img { transform: scale(1.04); }
+    .card-media::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 42%;
+      background: linear-gradient(180deg, transparent, rgba(6, 17, 31, .88));
+    }
+    .card-media .badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 1;
+    }
+
+    .card-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+    .card-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .eyebrow { color: var(--muted); font-size: .92rem; font-weight: 700; }
+    .card h3 { margin: 0; font-size: 1.55rem; line-height: 1.05; letter-spacing: -.03em; }
+    .card p { margin: 0; color: var(--muted); }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .meta span { padding: .45rem .7rem; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--card-border); font-size: .9rem; }
+    .hike-list { margin: 0; padding-left: 18px; color: var(--text); }
+    .hike-list li { margin-bottom: 6px; }
+    .card-actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .map-panel {
+      background: var(--map-panel);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 520px;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    #map { width: 100%; height: 100%; min-height: 520px; }
+    .map-list { display: grid; gap: 14px; align-content: start; }
+    .mini-card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--bg-elev);
+      box-shadow: var(--shadow);
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .mini-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 26%, var(--card-border)); }
+    .mini-card p { margin: 8px 0 0; color: var(--muted); }
+
+    .planner-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .planner-output {
+      margin-top: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .recommendation {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--bg-elev);
+      box-shadow: var(--shadow);
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    details {
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      background: var(--bg-elev);
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+    summary { cursor: pointer; font-weight: 700; }
+    details p, details ul { color: var(--muted); }
+
+    .footer {
+      max-width: var(--max);
+      margin: 84px auto 36px;
+      padding: 28px 20px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--muted);
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+    }
+
+    .fade-in { opacity: 0; transform: translateY(26px); transition: opacity .65s ease, transform .65s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .hidden { display: none !important; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+    @keyframes floatGlow {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(-22px, -12px, 0) scale(1.08); }
+    }
+
+    @media (max-width: 1100px) {
+      .hero-content,
+      .filters-wrap,
+      .map-layout,
+      .quick-guide,
+      .footer { grid-template-columns: 1fr; }
+      .destination-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .topbar-inner { align-items: start; }
+      .nav-links { justify-content: flex-start; }
+      .hero { min-height: 92svh; }
+      .hero h1 { max-width: 100%; }
+      .destination-grid,
+      .faq-grid,
+      .planner-grid,
+      .hero-metrics { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: 1fr; }
+      .badge { max-width: 100%; }
+      .panel, .map-panel { border-radius: 20px; }
+      .footer { margin-top: 56px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .fade-in { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="site-shell" data-theme="dark">
+    <div class="grid-overlay" aria-hidden="true"></div>
+
+    <header class="topbar" aria-label="Primary">
+      <div class="topbar-inner">
+        <a class="brand" href="#hero" aria-label="Switzerland Hiking Guide home">
+          <span class="brand-dot" aria-hidden="true">⛰</span>
+          <span>Switzerland Hiking Guide</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#quick-guide">Quick guide</a>
+          <a href="#explore">Trails</a>
+          <a href="#map-section">Map</a>
+          <a href="#planner">Planner</a>
+          <a href="#faqs">FAQs</a>
+          <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch color theme">🌗 Theme</button>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero" id="hero">
+      <div class="aurora" aria-hidden="true"></div>
+      <div class="mountain-layer mountain-back" data-speed="0.10" aria-hidden="true"></div>
+      <div class="mountain-layer mountain-mid" data-speed="0.18" aria-hidden="true"></div>
+      <div class="mountain-layer mountain-front" data-speed="0.25" aria-hidden="true"></div>
+
+      <div class="hero-content">
+        <div class="hero-copy fade-in">
+          <span class="badge">🇨🇭 2026 immersive guide • interactive • planner-first</span>
+          <h1>Find your <span class="gradient">perfect Swiss hike</span>.</h1>
+          <p>
+            Switzerland is widely recognized for its dense network of marked hiking routes and dramatic alpine variety.
+            This upgraded guide adds parallax storytelling, visual trail cards, a clickable map, smart filters, a dark/light theme,
+            and a recommendation engine to help you choose the right hike faster.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#explore">Explore destinations</a>
+            <a class="btn btn-secondary" href="#planner">Plan my trip</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel fade-in" aria-label="Trip highlights">
+          <h2>At a glance</h2>
+          <div class="hero-metrics" aria-label="Key metrics">
+            <div class="metric"><span class="value">65,000 km</span><small>marked trails</small></div>
+            <div class="metric"><span class="value">6</span><small>featured regions</small></div>
+            <div class="metric"><span class="value">1</span><small>smart trip planner</small></div>
+          </div>
+          <ul>
+            <li>Parallax mountain hero for a more cinematic first impression</li>
+            <li>Photo-led hike cards with filterable difficulty, duration, and region tags</li>
+            <li>Leaflet map with markers that jump to each destination</li>
+            <li>Dark/light mode with saved preference</li>
+            <li>Recommendation engine based on trip length, experience level, and desired vibe</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <main id="main">
+      <section class="section" id="quick-guide">
+        <div class="section-header fade-in">
+          <div>
+            <span class="badge">Quick navigation</span>
+            <h2>Where to hike in Switzerland</h2>
+          </div>
+          <p>Use this quick guide for a fast decision, then refine it with the filters and planner below.</p>
+        </div>
+
+        <div class="quick-guide">
+          <div class="panel fade-in">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Goal</th><th>Best destination</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>First-time visit</td><td>Jungfrau Region</td></tr>
+                  <tr><td>Iconic mountain views</td><td>Zermatt (Matterhorn)</td></tr>
+                  <tr><td>Short scenic hike</td><td>Oeschinensee</td></tr>
+                  <tr><td>Quiet / less touristy</td><td>Engadine & Swiss National Park</td></tr>
+                  <tr><td>Multi-day trekking</td><td>Haute Route / Via Alpina</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel fade-in">
+            <h3 style="margin-top:0; font-size:1.35rem;">Best time to hike</h3>
+            <p style="margin:0 0 12px; color:var(--muted);"><strong>Best months:</strong> June–September</p>
+            <div class="chip-row" aria-label="Season notes">
+              <span class="chip">☀️ July–August: best weather, busiest</span>
+              <span class="chip">🍃 June & September: fewer crowds</span>
+              <span class="chip">⚠️ Weather changes quickly in the mountains</span>
+            </div>
+            <p class="helper-text">Trail markings in Switzerland typically follow yellow (easy), red/white (mountain hiking), and blue (advanced alpine) wayfinding.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="explore">
+        <div class="section-header fade-in">
+          <div>
+            <span class="badge">Smart filters</span>
+            <h2>Filter the trail ideas</h2>
+          </div>
+          <p>Choose the blend of difficulty, trip length, and region you want. Results update instantly and stay synced with the map and planner.</p>
+        </div>
+
+        <div class="filters-wrap">
+          <div class="panel fade-in">
+            <div class="filter-grid" role="group" aria-label="Destination filters">
+              <div class="field">
+                <label for="difficultyFilter">Difficulty</label>
+                <select id="difficultyFilter">
+                  <option value="all">All levels</option>
+                  <option value="easy">Easy</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="challenging">Challenging</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="durationFilter">Duration</label>
+                <select id="durationFilter">
+                  <option value="all">Any duration</option>
+                  <option value="short">Short day hike</option>
+                  <option value="medium">Full day</option>
+                  <option value="multi">Multi-day</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="regionFilter">Region</label>
+                <select id="regionFilter">
+                  <option value="all">All regions</option>
+                  <option value="Valais">Valais</option>
+                  <option value="Bernese Oberland">Bernese Oberland</option>
+                  <option value="Graubünden">Graubünden</option>
+                  <option value="Central Switzerland">Central Switzerland</option>
+                  <option value="All Switzerland">All Switzerland</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="searchInput">Search</label>
+                <input id="searchInput" type="search" placeholder="Search destination or trail" />
+              </div>
+            </div>
+            <div class="chip-row" id="resultsSummary" aria-live="polite"></div>
+            <p class="helper-text">Tip: click “Focus on map” from any card to jump directly to its marker.</p>
+          </div>
+
+          <div class="panel fade-in">
+            <h3 style="margin-top:0; font-size:1.35rem;">Why these filters help</h3>
+            <div class="chip-row">
+              <span class="chip">🚶 Beginner-friendly picks</span>
+              <span class="chip">🧗 Technical-feel experiences</span>
+              <span class="chip">🗺 Region-based trip planning</span>
+              <span class="chip">⏱ Day trip vs multi-day</span>
+            </div>
+            <p class="helper-text">The full card gallery below includes the original guide’s core destinations plus multi-day trekking inspiration in the same visual system.</p>
+          </div>
+        </div>
+
+        <div class="destination-grid" id="destinationGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="section" id="map-section">
+        <div class="section-header fade-in">
+          <div>
+            <span class="badge">Interactive map</span>
+            <h2>Click the map to explore each region</h2>
+          </div>
+          <p>Jump from overview to trail card in one click. Markers and card actions are linked in both directions.</p>
+        </div>
+
+        <div class="map-layout">
+          <div class="map-list fade-in" id="mapList"></div>
+          <div class="map-panel fade-in">
+            <div id="map" role="application" aria-label="Map of featured hiking destinations in Switzerland"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="planner">
+        <div class="section-header fade-in">
+          <div>
+            <span class="badge">Interactive planner</span>
+            <h2>Plan your hike in seconds</h2>
+          </div>
+          <p>Tell the planner how long you have, how confident you feel, and what experience you want. It will rank the best-fit destinations from this guide.</p>
+        </div>
+
+        <div class="filters-wrap">
+          <div class="panel fade-in">
+            <form id="plannerForm">
+              <div class="planner-grid">
+                <div class="field">
+                  <label for="tripLength">Trip length</label>
+                  <select id="tripLength" name="tripLength">
+                    <option value="1">1 day</option>
+                    <option value="2">2 days</option>
+                    <option value="3-5">3–5 days</option>
+                    <option value="6+">6+ days</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="experience">Experience level</label>
+                  <select id="experience" name="experience">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="vibe">Preferred vibe</label>
+                  <select id="vibe" name="vibe">
+                    <option value="iconic">Iconic views</option>
+                    <option value="quiet">Quiet escape</option>
+                    <option value="glacier">Glacier drama</option>
+                    <option value="family">Easy & flexible</option>
+                    <option value="adventure">Adventure trekking</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="transport">Transport style</label>
+                  <select id="transport" name="transport">
+                    <option value="public">Public transport only</option>
+                    <option value="either">Either public transport or car</option>
+                  </select>
+                </div>
+              </div>
+              <div class="hero-actions" style="margin-top:18px;">
+                <button type="submit" class="btn btn-primary">Get recommendations</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel fade-in">
+            <h3 style="margin-top:0; font-size:1.35rem;">Planner output</h3>
+            <p class="helper-text" style="margin-top:0;">The recommendations below are calculated from the destinations already featured on the page. Use them as a fast shortlist, then open the linked card or map marker.</p>
+            <div class="planner-output" id="plannerOutput" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="faqs">
+        <div class="section-header fade-in">
+          <div>
+            <span class="badge">FAQ</span>
+            <h2>Helpful answers before you go</h2>
+          </div>
+          <p>Core guidance from the original guide—now with a cleaner layout and better scanning.</p>
+        </div>
+        <div class="faq-grid">
+          <details class="fade-in" open>
+            <summary>Best place to hike in Switzerland?</summary>
+            <p>Jungfrau Region is the strongest all-round first choice for variety and accessibility, while Zermatt remains the classic pick for iconic Matterhorn views.</p>
+          </details>
+          <details class="fade-in">
+            <summary>Is Switzerland beginner-friendly?</summary>
+            <p>Yes. Many routes are well signed and easy to combine with mountain railways, buses, and cable cars.</p>
+          </details>
+          <details class="fade-in">
+            <summary>Can you hike without a car?</summary>
+            <p>Absolutely. This guide assumes public transport works well for most of the featured hikes, especially Jungfrau, Zermatt, Lucerne, and Oeschinensee.</p>
+          </details>
+          <details class="fade-in">
+            <summary>Most scenic hikes?</summary>
+            <ul>
+              <li>Five Lakes Walk (Zermatt)</li>
+              <li>Männlichen → Kleine Scheidegg</li>
+              <li>Oeschinensee Panorama Trail</li>
+              <li>Stoos Ridge Trail</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer fade-in">
+      <div>
+        <strong style="display:block; color:var(--text); margin-bottom:8px;">Final thoughts</strong>
+        Switzerland offers everything from relaxed lake walks to serious alpine trekking. If you want the most balanced first trip, start with Jungfrau or Zermatt, then use the planner to tailor the rest of your itinerary.
+      </div>
+      <div>
+        <strong style="display:block; color:var(--text); margin-bottom:8px;">Implementation note</strong>
+        This enhanced version uses dynamic remote photo assets and a Leaflet map library. You can replace the image URLs or base map style with brand-approved assets later without changing the layout system.
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    const destinations = [
+      {
+        id: 'zermatt',
+        name: 'Zermatt',
+        title: 'Iconic Matterhorn views',
+        region: 'Valais',
+        difficulty: 'easy',
+        duration: 'short',
+        vibe: ['iconic', 'family'],
+        transport: 'public',
+        coords: [46.0207, 7.7491],
+        image: 'https://images.unsplash.com/photo-1527668752968-14dc70a27c95?auto=format&fit=crop&w=1200&q=80',
+        summary: 'Classic Swiss alpine scenery with easy access to panoramas, trains, and photogenic viewpoints.',
+        hikes: ['Five Lakes Walk (5-Seenweg) · ~9–10 km · easy–moderate', 'Gornergrat → Riffelberg · easy panoramic descent with glacier views'],
+        why: ['Matterhorn iconography', 'Excellent mountain transport', 'Great choice for first-time photographers']
+      },
+      {
+        id: 'jungfrau',
+        name: 'Jungfrau Region',
+        title: 'Best for first-time visitors',
+        region: 'Bernese Oberland',
+        difficulty: 'moderate',
+        duration: 'medium',
+        vibe: ['iconic', 'family'],
+        transport: 'public',
+        coords: [46.5935, 7.9091],
+        image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+        summary: 'A broad mix of ridge walks, waterfall valleys, and headline mountain scenery with excellent infrastructure.',
+        hikes: ['Männlichen → Kleine Scheidegg · easy–moderate ridge walk', 'Eiger Trail · moderate–challenging', 'Lauterbrunnen Valley Walk · waterfalls & valley scenery'],
+        why: ['All-level route mix', 'Excellent transport links', 'Strong first-trip versatility']
+      },
+      {
+        id: 'oeschinensee',
+        name: 'Oeschinensee',
+        title: 'Short but unforgettable',
+        region: 'Bernese Oberland',
+        difficulty: 'moderate',
+        duration: 'short',
+        vibe: ['family', 'iconic'],
+        transport: 'public',
+        coords: [46.4983, 7.7263],
+        image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+        summary: 'Turquoise lake views paired with a manageable outing that works brilliantly as a day trip.',
+        hikes: ['Oeschinensee Panorama Trail · ~8–9 km · moderate'],
+        why: ['Lake-and-cliff drama', 'High reward for the effort', 'Great short-trip option']
+      },
+      {
+        id: 'aletsch',
+        name: 'Aletsch Glacier',
+        title: 'Glacier-scale landscape',
+        region: 'Valais',
+        difficulty: 'challenging',
+        duration: 'medium',
+        vibe: ['glacier', 'adventure'],
+        transport: 'public',
+        coords: [46.4167, 8.0833],
+        image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80',
+        summary: 'Big UNESCO-listed glacier scenery, more space, and a feeling of mountain scale that stands apart from the lakeside hikes.',
+        hikes: ['Aletsch Panorama Trail · ~15–30 km'],
+        why: ['Dramatic glacier presence', 'Less crowded feel', 'Excellent for a strong day out']
+      },
+      {
+        id: 'engadine',
+        name: 'Engadine & National Park',
+        title: 'Quiet wilderness hiking',
+        region: 'Graubünden',
+        difficulty: 'moderate',
+        duration: 'medium',
+        vibe: ['quiet', 'adventure'],
+        transport: 'either',
+        coords: [46.6643, 10.1700],
+        image: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80',
+        summary: 'Protected landscapes, wildlife potential, and a slower rhythm for travelers who want fewer crowds.',
+        hikes: ['Protected valley and mountain routes across the Engadine and Swiss National Park'],
+        why: ['Strong wilderness feel', 'Excellent for photographers', 'Underrated compared with the headline resorts']
+      },
+      {
+        id: 'lucerne',
+        name: 'Lucerne Region',
+        title: 'Accessible ridge and panorama hikes',
+        region: 'Central Switzerland',
+        difficulty: 'easy',
+        duration: 'short',
+        vibe: ['family', 'iconic'],
+        transport: 'public',
+        coords: [46.9930, 8.5853],
+        image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80',
+        summary: 'Beginner-friendly options such as Mount Rigi and the Stoos Ridge Trail that are easy to fit into a shorter itinerary.',
+        hikes: ['Stoos Ridge Trail', 'Mount Rigi Panorama Trail'],
+        why: ['Short-trip friendly', 'Easy transport access', 'Low-friction option for mixed-ability groups']
+      },
+      {
+        id: 'multi',
+        name: 'Haute Route / Via Alpina',
+        title: 'Best multi-day trekking inspiration',
+        region: 'All Switzerland',
+        difficulty: 'challenging',
+        duration: 'multi',
+        vibe: ['adventure', 'glacier'],
+        transport: 'either',
+        coords: [46.3, 7.9],
+        image: 'https://images.unsplash.com/photo-1483721310020-03333e577078?auto=format&fit=crop&w=1200&q=80',
+        summary: 'For trekkers seeking a bigger commitment, these long routes deliver the most sustained alpine journey across the country.',
+        hikes: ['Haute Route (Chamonix → Zermatt) · 180–220 km', 'Via Alpina (Swiss section) · ~390 km'],
+        why: ['Ambitious point-to-point journey', 'Big mountain immersion', 'Designed for committed trekkers']
+      }
+    ];
+
+    const state = {
+      theme: localStorage.getItem('swiss-hike-theme') || 'dark',
+      difficulty: 'all',
+      duration: 'all',
+      region: 'all',
+      search: ''
+    };
+
+    const shell = document.querySelector('.site-shell');
+    const themeToggle = document.getElementById('themeToggle');
+    const destinationGrid = document.getElementById('destinationGrid');
+    const mapList = document.getElementById('mapList');
+    const resultsSummary = document.getElementById('resultsSummary');
+    const plannerOutput = document.getElementById('plannerOutput');
+    const searchInput = document.getElementById('searchInput');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function setTheme(theme) {
+      state.theme = theme;
+      shell.setAttribute('data-theme', theme);
+      themeToggle.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+      themeToggle.textContent = theme === 'dark' ? '🌗 Theme' : '🌞 Theme';
+      localStorage.setItem('swiss-hike-theme', theme);
+    }
+
+    setTheme(state.theme);
+    themeToggle.addEventListener('click', () => setTheme(state.theme === 'dark' ? 'light' : 'dark'));
+
+    const map = L.map('map', { scrollWheelZoom: false }).setView([46.75, 8.3], 7.2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markerById = new Map();
+
+    function createIcon(labelIndex) {
+      return L.divIcon({
+        className: '',
+        html: `<div style="width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04111f;font-weight:800;border:2px solid rgba(255,255,255,.75);box-shadow:0 10px 22px rgba(0,0,0,.18);">${labelIndex}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -10]
+      });
+    }
+
+    destinations.forEach((d, index) => {
+      const marker = L.marker(d.coords, { icon: createIcon(index + 1), title: d.name }).addTo(map);
+      marker.bindPopup(`<strong>${d.name}</strong><br>${d.title}<br><button type="button" data-focus-card="${d.id}" style="margin-top:8px;padding:8px 10px;border-radius:10px;border:none;background:#0ea5e9;color:white;cursor:pointer;">Open card</button>`);
+      marker.on('click', () => focusDestination(d.id, true));
+      markerById.set(d.id, marker);
+    });
+
+    map.on('popupopen', event => {
+      const button = event.popup.getElement().querySelector('[data-focus-card]');
+      if (button) button.addEventListener('click', () => focusDestination(button.dataset.focusCard, false));
+    });
+
+    function renderMapList(items) {
+      mapList.innerHTML = items.map((d, index) => `
+        <article class="mini-card">
+          <div class="card-topline">
+            <strong>${index + 1}. ${d.name}</strong>
+            <span class="chip">${d.region}</span>
+          </div>
+          <p>${d.title}</p>
+          <div class="card-actions" style="margin-top:14px;">
+            <button class="btn btn-secondary" type="button" data-map-focus="${d.id}">Focus on map</button>
+            <button class="btn btn-primary" type="button" data-card-focus="${d.id}">Open card</button>
+          </div>
+        </article>
+      `).join('');
+
+      mapList.querySelectorAll('[data-map-focus]').forEach(btn => btn.addEventListener('click', () => focusDestination(btn.dataset.mapFocus, true)));
+      mapList.querySelectorAll('[data-card-focus]').forEach(btn => btn.addEventListener('click', () => focusDestination(btn.dataset.cardFocus, false)));
+    }
+
+    function filteredDestinations() {
+      return destinations.filter(d => {
+        const difficultyOkay = state.difficulty === 'all' || d.difficulty === state.difficulty;
+        const durationOkay = state.duration === 'all' || d.duration === state.duration;
+        const regionOkay = state.region === 'all' || d.region === state.region;
+        const q = state.search.trim().toLowerCase();
+        const searchOkay = !q || [d.name, d.title, d.region, ...d.hikes].join(' ').toLowerCase().includes(q);
+        return difficultyOkay && durationOkay && regionOkay && searchOkay;
+      });
+    }
+
+    function summaryChips(items) {
+      const count = items.length;
+      const summary = [
+        `${count} destination${count === 1 ? '' : 's'} shown`,
+        state.difficulty === 'all' ? 'All difficulty levels' : `Difficulty: ${state.difficulty}`,
+        state.duration === 'all' ? 'Any duration' : `Duration: ${state.duration}`,
+        state.region === 'all' ? 'All regions' : `Region: ${state.region}`
+      ];
+      resultsSummary.innerHTML = summary.map(text => `<span class="chip">${text}</span>`).join('');
+    }
+
+    function renderCards(items) {
+      destinationGrid.innerHTML = items.map((d, index) => `
+        <article class="card fade-in" id="card-${d.id}" tabindex="-1">
+          <div class="card-media">
+            <img loading="lazy" decoding="async" src="${d.image}" alt="Scenic mountain landscape representing ${d.name}" />
+            <span class="badge">#${index + 1} • ${d.region}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-topline">
+              <div>
+                <div class="eyebrow">${d.title}</div>
+                <h3>${d.name}</h3>
+              </div>
+            </div>
+            <p>${d.summary}</p>
+            <div class="meta">
+              <span>${d.difficulty}</span>
+              <span>${d.duration === 'multi' ? 'multi-day' : d.duration === 'medium' ? 'full day' : 'short day hike'}</span>
+              <span>${d.transport === 'public' ? 'public transport friendly' : 'public transport or car'}</span>
+            </div>
+            <div>
+              <strong>Top hikes</strong>
+              <ul class="hike-list">${d.hikes.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+            <div>
+              <strong>Why go</strong>
+              <div class="chip-row">${d.why.map(item => `<span class="chip">${item}</span>`).join('')}</div>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-secondary" type="button" data-focus="${d.id}">Focus on map</button>
+              <a class="btn btn-primary" href="#planner" data-plan="${d.id}">Use in planner</a>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      destinationGrid.querySelectorAll('[data-focus]').forEach(btn => btn.addEventListener('click', () => focusDestination(btn.dataset.focus, true)));
+      observeFades();
+    }
+
+    function focusDestination(id, openPopup = true) {
+      const target = destinations.find(d => d.id === id);
+      if (!target) return;
+      const marker = markerById.get(id);
+      if (marker) {
+        map.flyTo(target.coords, openPopup ? 10.2 : 9.3, { duration: 1.1 });
+        if (openPopup) marker.openPopup();
+      }
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        card.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+        card.focus({ preventScroll: true });
+      }
+    }
+
+    function renderAll() {
+      const items = filteredDestinations();
+      renderCards(items);
+      renderMapList(items);
+      summaryChips(items);
+      document.querySelectorAll('.leaflet-marker-icon').forEach(el => el.style.opacity = '.35');
+      items.forEach(d => {
+        const marker = markerById.get(d.id);
+        if (marker && marker._icon) marker._icon.style.opacity = '1';
+      });
+      if (items.length && map) {
+        const bounds = L.latLngBounds(items.map(d => d.coords));
+        map.fitBounds(bounds.pad(0.18));
+      }
+    }
+
+    document.getElementById('difficultyFilter').addEventListener('change', e => { state.difficulty = e.target.value; renderAll(); });
+    document.getElementById('durationFilter').addEventListener('change', e => { state.duration = e.target.value; renderAll(); });
+    document.getElementById('regionFilter').addEventListener('change', e => { state.region = e.target.value; renderAll(); });
+    searchInput.addEventListener('input', e => { state.search = e.target.value; renderAll(); });
+
+    function plannerRecommendations(formState) {
+      const scored = destinations.map(d => {
+        let score = 0;
+        if (formState.experience === 'beginner') {
+          if (d.difficulty === 'easy') score += 4;
+          if (d.difficulty === 'moderate') score += 1;
+        } else if (formState.experience === 'intermediate') {
+          if (d.difficulty === 'moderate') score += 4;
+          if (d.difficulty === 'easy' || d.difficulty === 'challenging') score += 2;
+        } else {
+          if (d.difficulty === 'challenging') score += 4;
+          if (d.difficulty === 'moderate') score += 2;
+        }
+
+        if (formState.tripLength === '1') {
+          if (d.duration === 'short') score += 4;
+          if (d.duration === 'medium') score += 2;
+        }
+        if (formState.tripLength === '2') {
+          if (d.duration === 'medium') score += 4;
+          if (d.duration === 'short') score += 2;
+        }
+        if (formState.tripLength === '3-5') {
+          if (d.duration === 'medium') score += 3;
+          if (d.duration === 'multi') score += 2;
+        }
+        if (formState.tripLength === '6+') {
+          if (d.duration === 'multi') score += 5;
+          if (d.duration === 'medium') score += 2;
+        }
+
+        if (d.vibe.includes(formState.vibe)) score += 5;
+        if (formState.transport === 'public' && d.transport === 'public') score += 2;
+        if (formState.transport === 'either') score += 1;
+
+        return { ...d, score };
+      }).sort((a, b) => b.score - a.score).slice(0, 3);
+
+      return scored;
+    }
+
+    function renderPlanner(recs) {
+      plannerOutput.innerHTML = recs.map((d, index) => `
+        <article class="recommendation">
+          <div class="card-topline">
+            <strong>${index + 1}. ${d.name}</strong>
+            <span class="chip">score ${d.score}</span>
+          </div>
+          <p style="margin:8px 0 10px;">${d.summary}</p>
+          <div class="chip-row">
+            <span class="chip">${d.region}</span>
+            <span class="chip">${d.difficulty}</span>
+            <span class="chip">${d.duration === 'multi' ? 'multi-day' : d.duration}</span>
+          </div>
+          <div class="card-actions" style="margin-top:14px;">
+            <button class="btn btn-secondary" type="button" data-map-focus="${d.id}">Focus on map</button>
+            <button class="btn btn-primary" type="button" data-card-focus="${d.id}">Open card</button>
+          </div>
+        </article>
+      `).join('');
+
+      plannerOutput.querySelectorAll('[data-map-focus]').forEach(btn => btn.addEventListener('click', () => focusDestination(btn.dataset.mapFocus, true)));
+      plannerOutput.querySelectorAll('[data-card-focus]').forEach(btn => btn.addEventListener('click', () => focusDestination(btn.dataset.cardFocus, false)));
+    }
+
+    const plannerForm = document.getElementById('plannerForm');
+    plannerForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const formData = new FormData(plannerForm);
+      const recs = plannerRecommendations(Object.fromEntries(formData.entries()));
+      renderPlanner(recs);
+    });
+    plannerForm.addEventListener('reset', () => setTimeout(() => renderPlanner(plannerRecommendations({ tripLength: '1', experience: 'beginner', vibe: 'iconic', transport: 'public' })), 0));
+
+    function observeFades() {
+      const items = document.querySelectorAll('.fade-in:not(.visible)');
+      if (!('IntersectionObserver' in window) || prefersReducedMotion) {
+        items.forEach(item => item.classList.add('visible'));
+        return;
+      }
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.14 });
+      items.forEach(item => observer.observe(item));
+    }
+
+    if (!prefersReducedMotion) {
+      const layers = document.querySelectorAll('.mountain-layer');
+      const hero = document.querySelector('.hero');
+      window.addEventListener('scroll', () => {
+        const rect = hero.getBoundingClientRect();
+        const progress = Math.max(0, Math.min(1, -rect.top / (hero.offsetHeight || 1)));
+        layers.forEach(layer => {
+          const speed = Number(layer.dataset.speed || 0.1);
+          layer.style.transform = `translate3d(0, ${progress * 120 * speed}px, 0)`;
+        });
+      }, { passive: true });
+    }
+
+    renderAll();
+    renderPlanner(plannerRecommendations({ tripLength: '1', experience: 'beginner', vibe: 'iconic', transport: 'public' }));
+    observeFades();
+  </script>
+</body>
+</html>
