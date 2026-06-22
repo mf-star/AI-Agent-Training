@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Switzerland Hiking Guide 2026</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --panel: rgba(255,255,255,0.12);
+      --panel-strong: rgba(255,255,255,0.16);
+      --text: #e5eef8;
+      --muted: #c4d4e6;
+      --ink: #0b1324;
+      --brand: #7dd3fc;
+      --brand-2: #22d3ee;
+      --active: #0ea5e9;
+      --card: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(125,211,252,.18), transparent 24%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 2000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 28px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    }
+
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav li {
+      position: relative;
+    }
+
+    nav > ul > li > a,
+    nav > ul > li > button.nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      padding: 12px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+
+    nav > ul > li > a:hover,
+    nav > ul > li > button.nav-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--brand);
+      transform: translateY(-1px);
+    }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      min-width: 280px;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+    }
+
+    nav li:hover .dropdown,
+    nav li:focus-within .dropdown {
+      display: block;
+    }
+
+    .dropdown-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .dropdown a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      transition: background .2s ease, color .2s ease, transform .2s ease;
+      font-size: 0.95rem;
+    }
+
+    .dropdown a:hover {
+      background: rgba(125,211,252,0.12);
+      color: var(--brand);
+      transform: translateY(-1px);
+    }
+
+    .hero {
+      padding: 56px 28px 26px;
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 26px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(125,211,252,0.12);
+      color: var(--brand);
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 860px;
+    }
+
+    .tabs-wrap {
+      position: sticky;
+      top: 79px;
+      z-index: 1500;
+      padding: 0 28px 10px;
+      background: linear-gradient(to bottom, rgba(15,23,42,0.65), rgba(15,23,42,0));
+      backdrop-filter: blur(12px);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .tabs button {
+      flex: 1 1 120px;
+      border: none;
+      background: rgba(255,255,255,0.04);
+      color: white;
+      padding: 12px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+
+    .tabs button:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.10);
+    }
+
+    .tabs button.active {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: var(--ink);
+      box-shadow: 0 8px 20px rgba(34,211,238,0.35);
+    }
+
+    main {
+      padding: 10px 28px 40px;
+    }
+
+    .tab-content {
+      display: none;
+      background: rgba(255,255,255,0.98);
+      color: var(--ink);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 26px 60px rgba(0,0,0,0.18);
+      min-height: 55vh;
+    }
+
+    .tab-content.active { display: block; }
+
+    .hero-img {
+      width: 100%;
+      max-height: 410px;
+      object-fit: cover;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      transition: transform .3s ease, box-shadow .3s ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+    }
+
+    .hero-img:hover {
+      transform: scale(1.01);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #0a4d68;
+      font-size: 1.85rem;
+    }
+
+    .meta {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 8px 0 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #e6f7ff;
+      color: #075985;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 26px;
+      align-items: start;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid #e7eef7;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    ul { padding-left: 1.2rem; }
+    li + li { margin-top: 8px; }
+
+    footer {
+      padding: 0 28px 28px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 900px) {
+      .content-grid { grid-template-columns: 1fr; }
+      header.site-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .tabs-wrap { top: 116px; }
+      .dropdown { right: auto; left: 0; }
+      .dropdown-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .hero, .tabs-wrap, main, footer { padding-left: 16px; padding-right: 16px; }
+      header.site-header { padding: 14px 16px; }
+      .tab-content { padding: 20px; }
+      .tabs button { flex: 1 1 calc(50% - 10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="site-header">
+      <div class="logo-wrap">
+        <div class="logo">🇨🇭 Alpine Atlas</div>
+        <div class="tagline">Switzerland Hiking Guide • Trendy shell with dropdown-to-tab navigation</div>
+      </div>
+
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="#quick" onclick="activateTabById('quick'); return false;">Home</a></li>
+          <li>
+            <button class="nav-btn" aria-haspopup="true" aria-expanded="false">Hiking Regions ▾</button>
+            <div class="dropdown">
+              <div class="dropdown-grid">
+                <a href="#quick" onclick="activateTabById('quick'); return false;">🧭 Quick Guide</a>
+                <a href="#zermatt" onclick="activateTabById('zermatt'); return false;">🏔️ Zermatt</a>
+                <a href="#jungfrau" onclick="activateTabById('jungfrau'); return false;">🌄 Jungfrau</a>
+                <a href="#oeschinensee" onclick="activateTabById('oeschinensee'); return false;">💧 Oeschinensee</a>
+                <a href="#aletsch" onclick="activateTabById('aletsch'); return false;">❄️ Aletsch</a>
+                <a href="#engadine" onclick="activateTabById('engadine'); return false;">🌲 Engadine</a>
+                <a href="#lucerne" onclick="activateTabById('lucerne'); return false;">🌅 Lucerne</a>
+                <a href="#multi" onclick="activateTabById('multi'); return false;">🥾 Multi-Day</a>
+                <a href="#tips" onclick="activateTabById('tips'); return false;">🎒 Tips</a>
+                <a href="#faq" onclick="activateTabById('faq'); return false;">❓ FAQs</a>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">2026 Guide • dropdown links open matching tabs</div>
+        <h1>Explore Switzerland’s best hikes with one sleek tabbed experience</h1>
+        <p>Use the sticky tab bar, or jump straight to a destination from the header dropdown. Each dropdown item now opens the corresponding tab instead of sending you to a separate page.</p>
+      </div>
+    </section>
+
+    <div class="tabs-wrap">
+      <div class="tabs" role="tablist" aria-label="Switzerland hiking sections">
+        <button id="tabbtn-quick" class="tablink active" onclick="openTab(event, 'quick')" role="tab" aria-controls="quick" aria-selected="true">Quick Guide</button>
+        <button id="tabbtn-zermatt" class="tablink" onclick="openTab(event, 'zermatt')" role="tab" aria-controls="zermatt" aria-selected="false">Zermatt</button>
+        <button id="tabbtn-jungfrau" class="tablink" onclick="openTab(event, 'jungfrau')" role="tab" aria-controls="jungfrau" aria-selected="false">Jungfrau</button>
+        <button id="tabbtn-oeschinensee" class="tablink" onclick="openTab(event, 'oeschinensee')" role="tab" aria-controls="oeschinensee" aria-selected="false">Oeschinensee</button>
+        <button id="tabbtn-aletsch" class="tablink" onclick="openTab(event, 'aletsch')" role="tab" aria-controls="aletsch" aria-selected="false">Aletsch</button>
+        <button id="tabbtn-engadine" class="tablink" onclick="openTab(event, 'engadine')" role="tab" aria-controls="engadine" aria-selected="false">Engadine</button>
+        <button id="tabbtn-lucerne" class="tablink" onclick="openTab(event, 'lucerne')" role="tab" aria-controls="lucerne" aria-selected="false">Lucerne</button>
+        <button id="tabbtn-multi" class="tablink" onclick="openTab(event, 'multi')" role="tab" aria-controls="multi" aria-selected="false">Multi-Day</button>
+        <button id="tabbtn-tips" class="tablink" onclick="openTab(event, 'tips')" role="tab" aria-controls="tips" aria-selected="false">Tips</button>
+        <button id="tabbtn-faq" class="tablink" onclick="openTab(event, 'faq')" role="tab" aria-controls="faq" aria-selected="false">FAQs</button>
+      </div>
+    </div>
+
+    <main>
+      <section id="quick" class="tab-content active" role="tabpanel" aria-labelledby="tabbtn-quick">
+        <h2>🧭 Quick Guide</h2>
+        <div class="content-grid">
+          <div>
+            <p>Choose your destination based on your hiking goals. Use the header dropdown if you want to jump directly to a region, or scroll with the sticky tab rail for a more editorial browsing experience.</p>
+            <div class="meta">
+              <span class="pill">Best all-rounder: Jungfrau</span>
+              <span class="pill">Classic icon: Zermatt</span>
+              <span class="pill">Lake scenery: Oeschinensee</span>
+            </div>
+          </div>
+          <aside class="card">
+            <strong>How this version works</strong>
+            <ul>
+              <li>Dropdown items map directly to tabs.</li>
+              <li>URL hash updates when a tab opens.</li>
+              <li>Loading a hash like <code>#jungfrau</code> opens that tab automatically.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="zermatt" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-zermatt">
+        <img class="hero-img" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" alt="Zermatt mountain landscape" />
+        <h2>🏔️ Zermatt</h2>
+        <div class="meta"><span class="pill">Best for Matterhorn views</span><span class="pill">Signature alpine experience</span></div>
+        <ul>
+          <li>Five Lakes Walk (~10 km)</li>
+          <li>Gornergrat → Riffelberg</li>
+        </ul>
+      </section>
+
+      <section id="jungfrau" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-jungfrau">
+        <img class="hero-img" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee" alt="Jungfrau hiking landscape" />
+        <h2>🌄 Jungfrau Region</h2>
+        <ul>
+          <li>Männlichen → Kleine Scheidegg</li>
+          <li>Eiger Trail</li>
+          <li>Lauterbrunnen Valley</li>
+        </ul>
+      </section>
+
+      <section id="oeschinensee" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-oeschinensee">
+        <img class="hero-img" src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff" alt="Oeschinensee lake" />
+        <h2>💧 Oeschinensee</h2>
+        <p>Turquoise lake views and unforgettable scenery.</p>
+      </section>
+
+      <section id="aletsch" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-aletsch">
+        <img class="hero-img" src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e" alt="Aletsch Glacier" />
+        <h2>❄️ Aletsch Glacier</h2>
+        <p>Explore Switzerland’s largest glacier.</p>
+      </section>
+
+      <section id="engadine" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-engadine">
+        <img class="hero-img" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" alt="Engadine valley" />
+        <h2>🌲 Engadine</h2>
+        <p>Peaceful hikes and wildlife spotting.</p>
+      </section>
+
+      <section id="lucerne" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-lucerne">
+        <img class="hero-img" src="https://images.unsplash.com/photo-1491553895911-0055eca6402d" alt="Lucerne mountains" />
+        <h2>🌅 Lucerne Region</h2>
+        <ul>
+          <li>Stoos Ridge Trail</li>
+          <li>Mount Rigi Panorama</li>
+        </ul>
+      </section>
+
+      <section id="multi" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-multi">
+        <h2>🥾 Multi-Day Routes</h2>
+        <ul>
+          <li>Haute Route</li>
+          <li>Via Alpina</li>
+        </ul>
+      </section>
+
+      <section id="tips" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-tips">
+        <h2>🎒 Tips</h2>
+        <ul>
+          <li>Yellow = easy</li>
+          <li>Red/White = moderate</li>
+          <li>Blue = alpine</li>
+        </ul>
+      </section>
+
+      <section id="faq" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-faq">
+        <h2>❓ FAQs</h2>
+        <p>Jungfrau is best overall. No car needed.</p>
+      </section>
+    </main>
+
+    <footer>
+      Built as a single-page shell where header dropdown items open the matching content tab.
+    </footer>
+  </div>
+
+  <script>
+    function setActiveTab(tabName) {
+      const tabcontent = document.getElementsByClassName('tab-content');
+      const tablinks = document.getElementsByClassName('tablink');
+
+      for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove('active');
+      }
+      for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove('active');
+        tablinks[i].setAttribute('aria-selected', 'false');
+      }
+
+      const panel = document.getElementById(tabName);
+      const button = document.getElementById('tabbtn-' + tabName);
+      if (!panel || !button) return;
+
+      panel.classList.add('active');
+      button.classList.add('active');
+      button.setAttribute('aria-selected', 'true');
+      history.replaceState(null, '', '#' + tabName);
+    }
+
+    function openTab(evt, tabName) {
+      setActiveTab(tabName);
+    }
+
+    function activateTabById(tabName) {
+      setActiveTab(tabName);
+      const tabsTop = document.querySelector('.tabs-wrap');
+      if (tabsTop) {
+        tabsTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function activateFromHash() {
+      const hash = window.location.hash ? window.location.hash.slice(1) : 'quick';
+      const valid = ['quick','zermatt','jungfrau','oeschinensee','aletsch','engadine','lucerne','multi','tips','faq'];
+      setActiveTab(valid.includes(hash) ? hash : 'quick');
+    }
+
+    window.addEventListener('hashchange', activateFromHash);
+    window.addEventListener('DOMContentLoaded', activateFromHash);
+  </script>
+</body>
+</html>
